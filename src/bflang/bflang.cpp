@@ -430,33 +430,25 @@ int BFExecuteToken(bf_token* Tok)
     }
 }
 
-int BFCompileToken(bf_token* Tok, LinkedList<String> &OutCode)
+void BFCompileToken(bf_token* Tok, LinkedList<String> &OutCode)
 {
-    if (Tok->IsConstant) return Tok->Const.Val;
+    if (Tok->IsConstant) return;
     if (Tok->IsVar)
     {
-        return Tok->Var->Val;
+        return;
     }
     switch (Tok->Type)
     {
         case BFASSIGN:
-            Tok->First->Var->Val = BFExecuteToken(Tok->Second, OutCode);
-
-            return Tok->First->Var->Val;
         case BFADD:
-            return BFExecuteToken(Tok->First) + BFExecuteToken(Tok->Second, OutCode);
         case BFSUB:
-            return BFExecuteToken(Tok->First) - BFExecuteToken(Tok->Second, OutCode);
         case BFMUL:
-            return BFExecuteToken(Tok->First) * BFExecuteToken(Tok->Second, OutCode);
         case BFDIV:
-            return BFExecuteToken(Tok->First) / BFExecuteToken(Tok->Second, OutCode);
         case BFFUNCCALL:
             for (int I = 0; I < Tok->NumParams; I++)
             {
-                Tok->CallFunction->RootScope.Vars[I]->Val = BFExecuteToken(Tok->Params[I], OutCode);
+
             }
-            return BFExecuteFunc(Tok->CallFunction, OutCode);
     }
 }
 
@@ -475,12 +467,13 @@ int BFExecuteFunc(bf_function* Func)
 
 void BFCompileFunc(bf_function* Func, LinkedList<String> &OutCode)
 {
+    String label;
     for (int i = 0;i < Func->Name.Len;i++)
     {
-        OutCode.PushBack(Func->Name.Name[i]);
+        label.PushBack(Func->Name.Name[i]);
     }
-    OutCode.PushBack(':');
-    OutCode.PushBack('\n');
+    label.PushBack(':');
+    OutCode.PushBack(label);
     for (int I = 0; I < Func->RootScope.LineCount; I++)
     {
         BFCompileToken(Func->RootScope.Lines[I], OutCode);
